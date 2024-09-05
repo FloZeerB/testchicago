@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivi des Leads</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input[type="text"], input[type="date"], input[type="url"] {
+            padding: 8px;
+            width: 30%;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="submit"] {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #218838;
+        }
+        .delete-btn {
+            padding: 5px 10px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Suivi des Leads</h1>
+
+    <form id="leadForm">
+        <label for="companyName">Nom de l'entreprise:</label>
+        <input type="text" id="companyName" name="companyName" required>
+
+        <label for="leadName">Nom du lead:</label>
+        <input type="text" id="leadName" name="leadName" required>
+
+        <label for="creationDate">Date de création:</label>
+        <input type="date" id="creationDate" name="creationDate" required>
+
+        <label for="discordLink">Lien Discord:</label>
+        <input type="url" id="discordLink" name="discordLink" placeholder="https://discord.com" required>
+
+        <input type="submit" value="Ajouter">
+    </form>
+
+    <table id="leadsTable">
+        <thead>
+            <tr>
+                <th>Nom de l'entreprise</th>
+                <th>Nom du lead</th>
+                <th>Date de création</th>
+                <th>Lien Discord</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Les nouvelles lignes seront ajoutées ici -->
+        </tbody>
+    </table>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadLeads();
+        });
+
+        document.getElementById('leadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            // Récupérer les valeurs du formulaire
+            const companyName = document.getElementById('companyName').value;
+            const leadName = document.getElementById('leadName').value;
+            const creationDate = document.getElementById('creationDate').value;
+            const discordLink = document.getElementById('discordLink').value;
+
+            // Ajouter le lead au tableau et au stockage local
+            addLeadToTable(companyName, leadName, creationDate, discordLink);
+            saveLead(companyName, leadName, creationDate, discordLink);
+
+            // Réinitialiser le formulaire
+            document.getElementById('leadForm').reset();
+        });
+
+        function addLeadToTable(companyName, leadName, creationDate, discordLink) {
+            const table = document.getElementById('leadsTable').getElementsByTagName('tbody')[0];
+            const newRow = table.insertRow();
+
+            const companyCell = newRow.insertCell(0);
+            const leadCell = newRow.insertCell(1);
+            const dateCell = newRow.insertCell(2);
+            const discordCell = newRow.insertCell(3);
+            const actionCell = newRow.insertCell(4);
+
+            companyCell.textContent = companyName;
+            leadCell.textContent = leadName;
+            dateCell.textContent = creationDate;
+            
+            // Ajouter un lien cliquable pour le lien Discord
+            const discordLinkElement = document.createElement('a');
+            discordLinkElement.href = discordLink;
+            discordLinkElement.textContent = "Lien Discord";
+            discordLinkElement.target = "_blank";
+            discordCell.appendChild(discordLinkElement);
+
+            // Créer le bouton de suppression
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Supprimer';
+            deleteBtn.classList.add('delete-btn');
+            deleteBtn.onclick = function() {
+                deleteLead(newRow.rowIndex - 1);
+                table.deleteRow(newRow.rowIndex - 1);
+            };
+            actionCell.appendChild(deleteBtn);
+        }
+
+        function saveLead(companyName, leadName, creationDate, discordLink) {
+            const leads = JSON.parse(localStorage.getItem('leads')) || [];
+            leads.push({ companyName, leadName, creationDate, discordLink });
+            localStorage.setItem('leads', JSON.stringify(leads));
+        }
+
+        function loadLeads() {
+            const leads = JSON.parse(localStorage.getItem('leads')) || [];
+            leads.forEach(lead => {
+                addLeadToTable(lead.companyName, lead.leadName, lead.creationDate, lead.discordLink);
+            });
+        }
+
+        function deleteLead(index) {
+            const leads = JSON.parse(localStorage.getItem('leads')) || [];
+            leads.splice(index, 1);
+            localStorage.setItem('leads', JSON.stringify(leads));
+        }
+    </script>
+
+</body>
+</html>
